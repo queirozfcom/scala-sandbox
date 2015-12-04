@@ -33,7 +33,7 @@ object Elastic4s {
             case st:StringTerms => {
               st.getBuckets.asScala.foreach{ bucket =>
                 println(s"doc_count: ${bucket.getDocCount}  ")
-                println(s"key: ${bucket.getKeyAsString}")
+                println(s"key: ${bucket.getKey}  ")
               }
             }
             case _ => println("Something else")
