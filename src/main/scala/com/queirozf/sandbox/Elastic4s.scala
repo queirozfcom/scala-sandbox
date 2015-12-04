@@ -3,6 +3,7 @@ package com.queirozf.sandbox
 import com.sksamuel.elastic4s.ElasticClient
 import org.elasticsearch.common.settings.Settings
 import com.sksamuel.elastic4s.ElasticDsl._
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms
 import scala.collection.JavaConverters._
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -27,6 +28,17 @@ object Elastic4s {
           // lots of classes implement it, depending upon the type of aggregation you have got
           println(s"\n ${agg.getClass} \n")
           // the above will print org.elasticsearch.search.aggregations.bucket.terms.StringTerms
+
+          agg match{
+            case st:StringTerms => {
+              st.getBuckets.asScala.foreach{ bucket =>
+                println(s"doc_count: ${bucket.getDocCount}  ")
+                println(s"key: ${bucket.getKeyAsString}")
+              }
+            }
+            case _ => println("Something else")
+          }
+
         }
       }, 10.seconds)
   }
