@@ -1,9 +1,8 @@
-import collection.mutable.Stack
 import org.scalatest._
 
-import com.queirozf.sandbox.App
+import com.queirozf.sandbox.{VTTest => App}
 
-class AppSpec extends FlatSpec with Matchers {
+class VTTestSpec extends FlatSpec with Matchers {
 
   "test1" should "return as in problem description" in {
 

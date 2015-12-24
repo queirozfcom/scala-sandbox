@@ -3,7 +3,7 @@ package com.queirozf.sandbox
 /**
  * Created by felipe on 23/11/15.
  */
-object App {
+object VTTest {
 
   def main(args: Array[String]) {
 
