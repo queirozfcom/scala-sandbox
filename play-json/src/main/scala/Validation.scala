@@ -3,15 +3,11 @@ import play.api.libs.json._
 /**
   * Created by felipe.almeida@vtex.com.br on 3/9/16.
   */
-object App {
+object Validation extends App {
 
   case class Person(name: String, age: Int, numChildren: Int)
 
   implicit val pf:Reads[Person] = Json.reads[Person]
-
-  def main(args: Array[String]) {
-
-
 
     val str =
       """{
@@ -28,6 +24,6 @@ object App {
     }
 
     println(res)
-  }
+
 
 }
