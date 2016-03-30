@@ -9,6 +9,7 @@ object Nulls extends App {
 
   implicit val pf: Reads[Person] = Json.reads[Person]
 
+
   val str =
     """{
       "name":"John",
@@ -23,5 +24,6 @@ object Nulls extends App {
   }
 
   println(res)
+
 
 }
