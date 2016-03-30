@@ -3,19 +3,23 @@ import play.api.libs.json._
 /**
   * Created by felipe.almeida@vtex.com.br on 30/03/16.
   */
-object PrimitiveTypes extends App {
+object GenericObjects extends App {
 
-  case class Person(name: String, data: Map[String, String])
+  case class Person(name: String, data: JsValue)
 
   implicit val pr: Reads[Person] = Json.reads[Person]
-
-  // doesn't work
-  // implicit val mr:Reads[Map[String,Any]] = Json.reads[Map[String,Any]]
 
   val str =
     """{
       "name":"John",
-      "data":20
+      "data": {
+        "foo":"bar",
+        "baz": {
+          "quux": [
+            "a","b","c"
+          ]
+        }
+      }
       }"""
 
   val json = Json.parse(str)
@@ -26,6 +30,7 @@ object PrimitiveTypes extends App {
   }
 
   print(res)
+
 
 }
 
