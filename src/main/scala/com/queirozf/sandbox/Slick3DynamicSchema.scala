@@ -31,7 +31,7 @@ object Slick3DynamicSchema {
 
   def main(args: Array[String]) {
 
-    val db = Database.forURL("jdbc:mysql://localhost:3306/slickexamples?user=root&password=root")
+    val db = Database.forURL("jdbc:mysql://localhost:3306/slickexamples?user=root&password=Ghjkl2238")
 
     val users = TableQuery[Users]
 

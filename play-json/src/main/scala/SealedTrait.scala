@@ -34,26 +34,14 @@ object SealedTrait {
 
     implicit val pf: Reads[Person] = Json.reads[Person]
 
-    val str =
+    val works =
       """{
       "name":"John",
       "age":20,
       "car":"mercedes"
       }"""
 
-    val json = Json.parse(str)
-
-    val res = json.validate[Person] match {
-      case s: JsSuccess[Person] => s.get
-      case e: JsError => Json.prettyPrint(JsError.toJson(e))
-    }
-
-    println(res)
-
-
-
-
-    val str2 =
+    val worksToo =
       """{
         "name":"John",
         "age":20,
@@ -62,15 +50,24 @@ object SealedTrait {
         }
         }"""
 
-    val json2 = Json.parse(str2)
+    val fails =
+      """
+        |{
+        |  "name":"john",
+        |  "age":20,
+        |  "car": [ "an","array" ]
+        |}
+      """.stripMargin
 
-    val res2 = json2.validate[Person] match {
-      case s: JsSuccess[Person] => s.get
-      case e: JsError => Json.prettyPrint(JsError.toJson(e))
+
+    Seq(works, worksToo, fails).foreach { jsstr =>
+      val json = Json.parse(jsstr)
+      val res = json.validate[Person] match {
+        case s: JsSuccess[Person] => s.get
+        case e: JsError => Json.prettyPrint(JsError.toJson(e))
+      }
+      println(res)
     }
-
-    println(res2)
-
 
   }
 
