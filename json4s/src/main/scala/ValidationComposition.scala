@@ -18,10 +18,8 @@ object ValidationComposition extends App {
 
   case class Person(name: String, addresses: List[String])
 
-  val personR: Rule[JValue, Person] = Rule.gen[JValue, Person]
-
   val fullRule = new Rule[JValue, Person] {
-    override def validate(jvalue: JValue): VA[Person] = personR.validate(jvalue) match {
+    override def validate(jvalue: JValue): VA[Person] = Rule.gen[JValue, Person].validate(jvalue) match {
       case ValidationSuccess(person) => {
         person.addresses.size match {
           case 1 => ValidationSuccess(person)
@@ -33,6 +31,7 @@ object ValidationComposition extends App {
   }
 
 
+  println(fullRule.validate(parse("""{"addresses": ["foo"]} """)))
   println(fullRule.validate(parse("""{"name":"john","addresses": ["foo"]} """)))
   println(fullRule.validate(parse("""{"name":"john","addresses": ["foo","bar"]} """)))
   println(fullRule.validate(parse("""{"name":"john","addresses": ""} """)))
