@@ -18,3 +18,4 @@ project/plugins/project/
 venv3
 downloads
 .idea
+.ipynb_checkpoints

@@ -18,3 +18,8 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # postgres test
 
 GET /postgresSlickTest @controllers.SlickController.selectAllFromUserTable
+
+
+# multiple values test
+
+POST /sales   @controllers.MultipleValuesController.sales
