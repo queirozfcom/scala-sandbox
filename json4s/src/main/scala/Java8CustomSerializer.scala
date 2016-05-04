@@ -30,18 +30,15 @@ object Java8CustomSerializer extends App {
 
   case class Person(name: String, birth: ZonedDateTime)
 
-  val peter = Person("peter",ZonedDateTime.now())
 
-  println(write(peter))
+  val stroffset = """{"name":"john","birth":"2016-03-13T04:50:31-03:00"}"""
+  val strz = """{"name":"john","birth":"2016-03-13T04:50:31Z"}"""
+  val strnotz = """{"name":"john","birth":"2016-03-13T04:50:31"}"""
 
-//  val stroffset = """{"name":"john","birth":"2016-03-13T04:50:31-03:00"}"""
-//  val strz = """{"name":"john","birth":"2016-03-13T04:50:31Z"}"""
-//  val strnotz = """{"name":"john","birth":"2016-03-13T04:50:31"}"""
-//
-//  println(parse(stroffset).extractOpt[Person])
-//  println(parse(strz).extractOpt[Person])
-//  println(parse(strnotz).extractOpt[Person])
-//  println(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").parse("2016-03-13T04:50:31-03:00"))
-//  println(ZonedDateTime.now())
+  println(parse(stroffset).extractOpt[Person])
+  println(parse(strz).extractOpt[Person])
+  println(parse(strnotz).extractOpt[Person])
+  println(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").parse("2016-03-13T04:50:31-03:00"))
+  println(ZonedDateTime.now())
 
 }
