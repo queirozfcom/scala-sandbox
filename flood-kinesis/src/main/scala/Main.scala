@@ -60,13 +60,16 @@ object Main {
 
   def main(args: Array[String]) {
 
-    if(args.length != 4) throw new RuntimeException("""usage: sbt "run <nameStream> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
+    if(args.length != 4) throw new RuntimeException("""usage: sbt "run <streamName> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
 
     if(args(2).toInt >= 500) throw new RuntimeException("""maximum number of records per PutRecords entry is 500""")
 
 
-    print("Got args: ")
-    args.foreach(println)
+    println("Got args: ")
+    println(s"streamName: ${args(0)}")
+    println(s"numBatches: ${args(1)}")
+    println(s"numRecordsPerBatch: ${args(2)}")
+    println(s"threadWaitAfterEachBatchMillis: ${args(3)}")
 
     val streamName = args.head
 
@@ -76,11 +79,11 @@ object Main {
 
     val cores = Runtime.getRuntime().availableProcessors()
 
-    println(s"number of available cores: $cores")
+    println(s"number of available is $cores")
 
-    println(s"total num records to be sent: ${numBatches*numRecordsPerBatch}")
+    println(s"total num records to be sent is ${numBatches*numRecordsPerBatch}")
 
-    println(s"total batches needed for all data (25M records) ${ (25000000.0 / (numRecordsPerBatch)).toLong}")
+    println(s"total batches needed for all data (25M records) is ${ (25000000.0 / (numRecordsPerBatch)).toLong}")
 
     println("Starting now...")
     Thread.sleep(2000)
