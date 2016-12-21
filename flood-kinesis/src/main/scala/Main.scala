@@ -62,6 +62,9 @@ object Main {
 
     if(args.length != 4) throw new RuntimeException("""usage: sbt "run <nameStream> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
 
+    if(args(3).toInt >= 500) throw new RuntimeException("""maximum number of records per PutRecords entry is 500""")
+
+
     print("Got args: ")
     args.foreach(println)
 
@@ -71,11 +74,16 @@ object Main {
 
     implicit val formats = DefaultFormats
 
+    val cores = Runtime.getRuntime().availableProcessors()
+
+    println(s"number of available cores: $cores")
+
     println(s"total num records to be sent: ${numBatches*numRecordsPerBatch}")
 
     println(s"total batches needed for all data (25M records) ${ (25000000.0 / (numRecordsPerBatch)).toLong}")
 
-    Thread.sleep(200)
+    println("Starting now...")
+    Thread.sleep(2000)
 
     implicit val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
 
