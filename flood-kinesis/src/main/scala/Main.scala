@@ -25,6 +25,15 @@ object Main extends App {
 
   implicit val formats = DefaultFormats
 
+  val numBatches = 1000
+  val numRecordsPerBatch = 450
+
+  println(s"total num records: ${numBatches*numRecordsPerBatch}")
+
+  println(s"total batches needed for all data ${ 25000000.0 / (numRecordsPerBatch)}")
+
+  Thread.sleep(5000)
+
   def mkObj(idx: Int): String = {
 
     val timestamp = Instant.now().toEpochMilli
@@ -60,17 +69,17 @@ object Main extends App {
   }
 
 
-  val streamName = SET ME
+  val streamName = "storedash-metrics"
 
   implicit val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
 
   val md5 = MessageDigest.getInstance("MD5")
 
-  val indices = 0.to(1000).foreach { batchIdx =>
+  val indices = 0.to(numBatches).foreach { batchIdx =>
 
     val req = new PutRecordsRequest
 
-    val records = 0.to(450).map{ innerIdx =>
+    val records = 0.to(numRecordsPerBatch).map{ innerIdx =>
       val entry = new PutRecordsRequestEntry
       val data = mkObj(innerIdx)
       val dataBytes = data.getBytes("UTF-8")
@@ -82,16 +91,20 @@ object Main extends App {
       entry
     }.asJavaCollection
 
-
-//    print("numbytes: "+records.size()*250 )
-
     req.setStreamName(streamName)
     req.setRecords(records)
 
     Future(kinesisClient.putRecords(req)).map { res =>
 
       println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
-//      Thread.sleep(500)
+
+//      if(res.getFailedRecordCount != 0){
+//        res.getRecords.asScala.foreach(println)
+//      }else{
+//        println("")
+//      }
+
+      Thread.sleep(3000)
 //      println(Thread.currentThread().getName + ":" + res.toString)
     }.recover {
       case NonFatal(nf) => throw nf
