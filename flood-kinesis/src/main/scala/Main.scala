@@ -21,20 +21,10 @@ import scala.util.control.NonFatal
 /**
   * Created by felipe.almeida@vtex.com.br on 20/12/16.
   */
-object Main extends App {
+object Main {
 
-  implicit val formats = DefaultFormats
 
-  val numBatches = 1000
-  val numRecordsPerBatch = 450
-
-  println(s"total num records: ${numBatches*numRecordsPerBatch}")
-
-  println(s"total batches needed for all data ${ 25000000.0 / (numRecordsPerBatch)}")
-
-  Thread.sleep(5000)
-
-  def mkObj(idx: Int): String = {
+  def mkObj(idx: Int)(implicit formats: Formats): String = {
 
     val timestamp = Instant.now().toEpochMilli
 
@@ -54,69 +44,87 @@ object Main extends App {
         ("timestamp" -> timestamp) ~
         ("data" ->
           ("foo" -> "bar") ~
-          ("baz" -> s"quux $idx bar baz") ~
-          ("nested" ->
-            ("other" ->
-              ("bu" -> "báás") ~
-              ("fu" -> "faaa"))))
+            ("baz" -> s"quux $idx bar baz") ~
+            ("nested" ->
+              ("other" ->
+                ("bu" -> "báás") ~
+                  ("fu" -> "faaa"))))
 
 
 
-//    println(write(obj))
+    //    println(write(obj))
 
     write(obj)
 
   }
 
+  def main(args: Array[String]) {
 
-  val streamName = "storedash-metrics"
+    if(args.length != 4) throw new RuntimeException("""usage: sbt "run <nameStream> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
 
-  implicit val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
+    print("Got args: ")
+    args.foreach(println)
 
-  val md5 = MessageDigest.getInstance("MD5")
+    val streamName = args.head
 
-  val indices = 0.to(numBatches).foreach { batchIdx =>
+    val Array(numBatches,numRecordsPerBatch,threadWaitAfterEachBatchMillis) = args.tail.map(_.toLong)
 
-    val req = new PutRecordsRequest
+    implicit val formats = DefaultFormats
 
-    val records = 0.to(numRecordsPerBatch).map{ innerIdx =>
-      val entry = new PutRecordsRequestEntry
-      val data = mkObj(innerIdx)
-      val dataBytes = data.getBytes("UTF-8")
+    println(s"total num records to be sent: ${numBatches*numRecordsPerBatch}")
 
-      val bytebuf = ByteBuffer.wrap(dataBytes)
+    println(s"total batches needed for all data (25M records) ${ (25000000.0 / (numRecordsPerBatch)).toLong}")
 
-      entry.setData(bytebuf)
-      entry.setPartitionKey(new String(md5.digest(dataBytes)))
-      entry
-    }.asJavaCollection
+    Thread.sleep(200)
 
-    req.setStreamName(streamName)
-    req.setRecords(records)
+    implicit val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
 
-    Future(kinesisClient.putRecords(req)).map { res =>
+    val md5 = MessageDigest.getInstance("MD5")
 
-      println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
+    val indices = 0.to(numBatches.toInt).foreach { batchIdx =>
 
-//      if(res.getFailedRecordCount != 0){
-//        res.getRecords.asScala.foreach(println)
-//      }else{
-//        println("")
-//      }
+      val req = new PutRecordsRequest
 
-      Thread.sleep(3000)
-//      println(Thread.currentThread().getName + ":" + res.toString)
-    }.recover {
-      case NonFatal(nf) => throw nf
+      val records = 0.to(numRecordsPerBatch.toInt).map{ innerIdx =>
+        val entry = new PutRecordsRequestEntry
+        val data = mkObj(innerIdx)
+        val dataBytes = data.getBytes("UTF-8")
+
+        val bytebuf = ByteBuffer.wrap(dataBytes)
+
+        entry.setData(bytebuf)
+        entry.setPartitionKey(new String(md5.digest(dataBytes)))
+        entry
+      }.asJavaCollection
+
+      req.setStreamName(streamName)
+      req.setRecords(records)
+
+      Future(kinesisClient.putRecords(req)).map { res =>
+
+        println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
+
+        //      if(res.getFailedRecordCount != 0){
+        //        res.getRecords.asScala.foreach(println)
+        //      }else{
+        //        println("")
+        //      }
+
+        Thread.sleep(threadWaitAfterEachBatchMillis)
+        //      println(Thread.currentThread().getName + ":" + res.toString)
+      }.recover {
+        case NonFatal(nf) => throw nf
+      }
+
+
     }
 
 
+    val tenMinuteMillis = 10*60*1000
+
+    Thread.sleep(tenMinuteMillis)
+
   }
-
-
-  val tenMinuteMillis = 10*60*1000
-
-  Thread.sleep(tenMinuteMillis)
 
 }
 
