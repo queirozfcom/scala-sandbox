@@ -78,7 +78,7 @@ object Main {
 
     val cores = Runtime.getRuntime().availableProcessors()
 
-    println(s"number of available is $cores")
+    println(s"number of available cores is $cores")
 
     println(s"total num records to be sent is ${numBatches*numRecordsPerBatch}")
 
@@ -111,6 +111,10 @@ object Main {
       req.setRecords(records)
 
       Future(kinesisClient.putRecords(req)).map { res =>
+
+        if(batchIdx % 100 == 0){
+          println(s"current batch: ${batchIdx}")
+        }
 
         if(res.getFailedRecordCount != 0){
           println(s"${res.getFailedRecordCount} events failed. (batch ${batchIdx})")
