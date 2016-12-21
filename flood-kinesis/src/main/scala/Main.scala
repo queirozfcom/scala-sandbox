@@ -53,7 +53,7 @@ object Main extends App {
 
 
 
-    println(write(obj))
+//    println(write(obj))
 
     write(obj)
 
@@ -66,11 +66,11 @@ object Main extends App {
 
   val md5 = MessageDigest.getInstance("MD5")
 
-  val indices = 0.to(1).foreach { outerIdx =>
+  val indices = 0.to(1000).foreach { batchIdx =>
 
     val req = new PutRecordsRequest
 
-    val records = 0.to(200).map{ innerIdx =>
+    val records = 0.to(450).map{ innerIdx =>
       val entry = new PutRecordsRequestEntry
       val data = mkObj(innerIdx)
       val dataBytes = data.getBytes("UTF-8")
@@ -83,15 +83,16 @@ object Main extends App {
     }.asJavaCollection
 
 
-    print("numbytes: "+records.size()*250 )
+//    print("numbytes: "+records.size()*250 )
 
     req.setStreamName(streamName)
     req.setRecords(records)
 
     Future(kinesisClient.putRecords(req)).map { res =>
 
-      println("failed: "+res.getFailedRecordCount)
-      println(Thread.currentThread().getName + ":" + res.toString)
+      println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
+//      Thread.sleep(500)
+//      println(Thread.currentThread().getName + ":" + res.toString)
     }.recover {
       case NonFatal(nf) => throw nf
     }
