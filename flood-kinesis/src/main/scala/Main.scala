@@ -59,7 +59,7 @@ object Main {
 
   def main(args: Array[String]) {
 
-    if(args.length != 4) throw new RuntimeException("""usage: sbt "run <streamName> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
+    if(args.length != 5) throw new RuntimeException("""usage: sbt "run <streamName> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis> <threadWaitSlackAfterEachBatchMillis>" """)
 
     if(args(2).toInt >= 500) throw new RuntimeException("""maximum number of records per PutRecords entry is 500""")
 
@@ -68,10 +68,11 @@ object Main {
     println(s"numBatches: ${args(1)}")
     println(s"numRecordsPerBatch: ${args(2)}")
     println(s"threadWaitAfterEachBatchMillis: ${args(3)}")
+    println(s"threadWaitSlackAfterEachBatchMillis: ${args(4)}")
 
     val streamName = args.head
 
-    val Array(numBatches,numRecordsPerBatch,threadWaitAfterEachBatchMillis) = args.tail.map(_.toLong)
+    val Array(numBatches,numRecordsPerBatch,threadWaitAfterEachBatchMillis,threadWaitSlackAfterEachBatchMillis) = args.tail.map(_.toLong)
 
     implicit val formats = DefaultFormats
 
@@ -90,7 +91,7 @@ object Main {
 
     val md5 = MessageDigest.getInstance("MD5")
 
-    val indices = 0.to(numBatches.toInt).foreach { batchIdx =>
+    0.to(numBatches.toInt).foreach { batchIdx =>
 
       val req = new PutRecordsRequest
 
@@ -111,16 +112,14 @@ object Main {
 
       Future(kinesisClient.putRecords(req)).map { res =>
 
-        println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
+        if(res.getFailedRecordCount != 0){
+          println(s"${res.getFailedRecordCount} events failed. (batch ${batchIdx})")
+        }
 
-        //      if(res.getFailedRecordCount != 0){
-        //        res.getRecords.asScala.foreach(println)
-        //      }else{
-        //        println("")
-        //      }
+//        println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
 
-
-        val slack = Random.nextInt(5000)
+        // to prevent all batches from firing at the same time
+        val slack = Random.nextInt(threadWaitSlackAfterEachBatchMillis.toInt)
 
         Thread.sleep(threadWaitAfterEachBatchMillis + slack)
       }.recover {
