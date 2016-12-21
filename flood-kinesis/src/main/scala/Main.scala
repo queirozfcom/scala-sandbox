@@ -120,7 +120,7 @@ object Main {
         //      }
 
 
-        val slack = Random.nextInt(1000)
+        val slack = Random.nextInt(2000)
 
         Thread.sleep(threadWaitAfterEachBatchMillis + slack)
       }.recover {
