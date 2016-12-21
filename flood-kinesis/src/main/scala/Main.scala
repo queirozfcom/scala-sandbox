@@ -2,20 +2,19 @@
 import java.nio.ByteBuffer
 import java.security.MessageDigest
 import java.time.Instant
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.model.{PutRecordRequest, PutRecordsRequest, PutRecordsRequestEntry}
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.Serialization._
 
-
-
 import scala.collection.immutable.IndexedSeq
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.util.Random
 import scala.util.control.NonFatal
 
 /**
@@ -63,7 +62,6 @@ object Main {
     if(args.length != 4) throw new RuntimeException("""usage: sbt "run <streamName> <numBatches> <numRecordsPerBatch> <threadWaitAfterEachBatchMillis>" """)
 
     if(args(2).toInt >= 500) throw new RuntimeException("""maximum number of records per PutRecords entry is 500""")
-
 
     println("Got args: ")
     println(s"streamName: ${args(0)}")
@@ -121,8 +119,10 @@ object Main {
         //        println("")
         //      }
 
-        Thread.sleep(threadWaitAfterEachBatchMillis)
-        //      println(Thread.currentThread().getName + ":" + res.toString)
+
+        val slack = Random.nextInt(1000)
+
+        Thread.sleep(threadWaitAfterEachBatchMillis + slack)
       }.recover {
         case NonFatal(nf) => throw nf
       }
