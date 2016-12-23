@@ -6,6 +6,7 @@ import java.time.Instant
 import scala.collection.JavaConverters._
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.model.{PutRecordRequest, PutRecordsRequest, PutRecordsRequestEntry}
+import org.apache.logging.log4j.LogManager
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.Serialization._
@@ -22,6 +23,7 @@ import scala.util.control.NonFatal
   */
 object Main {
 
+  val logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME)
 
   def mkObj(idx: Int)(implicit formats: Formats): String = {
 
@@ -84,12 +86,16 @@ object Main {
 
     println(s"total batches needed for all data (25M records) is ${ (25000000.0 / (numRecordsPerBatch)).toLong}")
 
-    println("Starting now...")
     Thread.sleep(2000)
+//    println("Starting now...")
 
-    implicit val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
+    val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
+
+    //    println(kinesisClient)
 
     val md5 = MessageDigest.getInstance("MD5")
+
+    logger.info("straing now...")
 
     0.to(numBatches.toInt).foreach { batchIdx =>
 
@@ -110,14 +116,15 @@ object Main {
       req.setStreamName(streamName)
       req.setRecords(records)
 
+
       Future(kinesisClient.putRecords(req)).map { res =>
 
-        if(batchIdx % 100 == 0){
-          println(s"current batch: ${batchIdx}")
+        if(batchIdx % 10 == 0){
+          logger.debug(s"current batch: ${batchIdx}")
         }
 
         if(res.getFailedRecordCount != 0){
-          println(s"${res.getFailedRecordCount} events failed. (batch ${batchIdx})")
+          logger.warn(s"${res.getFailedRecordCount} events failed. (batch ${batchIdx})")
         }
 
 //        println(s"${Thread.currentThread().getName} - failcount: ${res.getFailedRecordCount} (batch: ${batchIdx})")
@@ -126,6 +133,7 @@ object Main {
         val slack = Random.nextInt(threadWaitSlackAfterEachBatchMillis.toInt)
 
         Thread.sleep(threadWaitAfterEachBatchMillis + slack)
+
       }.recover {
         case NonFatal(nf) => throw nf
       }
