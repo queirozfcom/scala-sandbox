@@ -97,7 +97,7 @@ object Main {
 
     val md5 = MessageDigest.getInstance("MD5")
 
-    logger.info("straing now...")
+    logger.info("starting now...")
 
 
 
