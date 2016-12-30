@@ -6,7 +6,7 @@ import java.time.Instant
 import scala.collection.JavaConverters._
 import com.amazonaws.services.kinesis.AmazonKinesisClient
 import com.amazonaws.services.kinesis.model.{PutRecordRequest, PutRecordsRequest, PutRecordsRequestEntry}
-import org.apache.logging.log4j.LogManager
+import org.apache.log4j.LogManager
 import org.json4s.JsonDSL._
 import org.json4s._
 import org.json4s.jackson.Serialization._
@@ -23,7 +23,7 @@ import scala.util.control.NonFatal
   */
 object Main {
 
-  val logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME)
+  val logger = LogManager.getRootLogger
 
   def mkObj(idx: Int)(implicit formats: Formats): String = {
 
@@ -91,11 +91,16 @@ object Main {
 
     val kinesisClient: AmazonKinesisClient = new AmazonKinesisClient()
 
-    //    println(kinesisClient)
+    Thread.sleep(2000)
+
+    logger.info(kinesisClient)
 
     val md5 = MessageDigest.getInstance("MD5")
 
     logger.info("straing now...")
+
+
+
 
     0.to(numBatches.toInt).foreach { batchIdx =>
 
@@ -120,7 +125,7 @@ object Main {
       Future(kinesisClient.putRecords(req)).map { res =>
 
         if(batchIdx % 10 == 0){
-          logger.debug(s"current batch: ${batchIdx}")
+          logger.info(s"current batch: ${batchIdx}")
         }
 
         if(res.getFailedRecordCount != 0){
