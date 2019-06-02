@@ -3,7 +3,13 @@ edges
 
 ### Instalação / Testes Execução:
 
-`$ git `
+- `$ git clone https://github.com/queirozfcom/edges.git`
+
+- `$ cd edges`
+
+- `$ sbt test` // run tests
+
+- `$ sbt run`  // run main class (takes about 10 seconds, outputs to STDOUT)
 
 ### Suposições
 
